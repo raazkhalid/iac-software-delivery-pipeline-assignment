@@ -296,7 +296,105 @@
                     }
                 ]
             }
+        },
+        "AppCodePipeline": {
+            "Type": "AWS::CodePipeline::Pipeline",
+            "Properties": {
+                "ArtifactStore": {
+                    "Location": {
+                        "Ref": "ArtifactBucket"
+                    },
+                    "Type": "S3"
+                },
+                "RoleArn": {
+                    "Fn::GetAtt": [
+                        "CodePipelineServiceRole",
+                        "Arn"
+                    ]
+                },
+                "Stages": [
+                    {
+                        "Name": "Source",
+                        "Actions": [
+                            {
+                                "Name": "GetSource",
+                                "ActionTypeId": {
+                                    "Category": "Source",
+                                    "Owner": "ThirdParty",
+                                    "Provider": "GitHub",
+                                    "Version": "1"
+                                },
+                                "Configuration": {
+                                    "Owner": {
+                                        "Ref": "GitHubUsername"
+                                    },
+                                    "Repo": {
+                                        "Ref": "GitHubRepositoryName"
+                                    },
+                                    "Branch": {
+                                        "Ref": "GitHubBranchName"
+                                    },
+                                    "OAuthToken": {
+                                        "Ref": "GitHubAccessToken"
+                                    },
+                                    "PollForSourceChanges": "false"
+                                },
+                                "OutputArtifacts": [
+                                    {
+                                        "Name": "SourceCode"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "Name": "Build",
+                        "Actions": [
+                            {
+                                "Name": "BuildSource",
+                                "InputArtifacts": [
+                                    {
+                                        "Name": "SourceCode"
+                                    }
+                                ],
+                                "ActionTypeId": {
+                                    "Category": "Build",
+                                    "Owner": "AWS",
+                                    "Provider": "CodeBuild",
+                                    "Version": "1"
+                                },
+                                "Configuration": {
+                                    "ProjectName": {
+                                        "Ref": "AppBuildProject"
+                                    }
+                                },
+                                "OutputArtifacts": [
+                                    {
+                                        "Name": "CodeArtifact"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
         }
     },
-    "Outputs": {}
+    "Outputs": {
+        "PipelineName": {
+            "Description": "Name of the CodePipeline",
+            "Value": {
+                "Ref": "AppCodePipeline"
+            }
+        },
+        "S3BucketDomain": {
+            "Description": "S3 bucket domain name",
+            "Value": {
+                "Fn::GetAtt": [
+                    "ArtifactBucket",
+                    "DomainName"
+                ]
+            }
+        }
+    }
 } 
