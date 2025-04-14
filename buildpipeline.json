@@ -16,7 +16,7 @@
         "GitHubRepositoryName": {
             "Description": "GitHub repository name",
             "Type": "String",
-            "Default": "python-project"
+            "Default": "java-project"
         }
     },
     "Resources": {
